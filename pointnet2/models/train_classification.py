@@ -63,7 +63,12 @@ def test(model, loader):
         
         #points = points.transpose(2, 1)
         pred= classifier(points)
-        total_loss = F.mse_loss(pred.cpu().float(), target.cpu().float())
+        
+        #pred = pred.permute(0,2,1)
+        target = target.view(64,63)
+        
+        print(pred.size())
+        total_loss = F.mse_loss(pred.squeeze().cpu().float(), target.cpu().float())
         
 
         mse_list.append(total_loss)
@@ -115,8 +120,8 @@ def main(args):
 
     # train_dataset = MSRAhand(n_sample =1024, task = 'train')
     # test_dataset = MSRAhand(n_sample = 1024, task = 'test')
-    train_dataset = Hands17data(task = 'train')
-    test_dataset = Hands17data(task = 'test')
+    train_dataset = MSRAhand_n(task = 'train')
+    test_dataset = MSRAhand_n(task = 'test')
     #data = Hands17data(task = 'train')
     # test_dataset = Hands17data(task = 'test')
     #test_dataset,train_dataset = torch.utils.data.random_split(data, [20000, 937032], generator=torch.Generator().manual_seed(42))
@@ -193,10 +198,11 @@ def main(args):
                 points, target = points.cuda(), target.cuda()
 
             pred = classifier(points)
-            
+            #print(pred.shape)
             loss = criterion(pred.squeeze(), target.float())
             
             current_mse = loss.item()
+
             mse.append(current_mse)
             loss.backward()
             optimizer.step()

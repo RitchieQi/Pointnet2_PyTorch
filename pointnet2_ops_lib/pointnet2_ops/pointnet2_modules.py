@@ -207,3 +207,39 @@ class PointnetFPModule(nn.Module):
         new_features = self.mlp(new_features)
 
         return new_features.squeeze(-1)
+
+class jointFPModule(nn.Module):
+    def __init__(self,mlp,bn=True):
+        super(jointFPModule, self).__init__()
+        self.mlp = build_shared_mlp(mlp, bn=bn)
+    
+    def forward(self, unknown, known, unknown_feats, known_feats):
+        r'''
+        parameter:
+        unknow: B,21,nsample(128),6
+        known: B,21,1,3
+
+        unknow_feats: B,6,21,N
+        knowm_feats: B,C,21,1
+        '''
+        interpolated_feats = known_feats.expand(-1,-1,-1,unknown.size(2))
+        extra_feats = unknown[:,:,:,:3] - known.unsqueeze(2).expand(-1,-1,unknown.size(2),-1)
+        new_features = torch.cat([extra_feats.permute(0,3,1,2),interpolated_feats, unknown_feats.permute(0,3,1,2)], dim=1)
+        new_features = self.mlp(new_features)
+        return new_features
+
+class jointSAModule(nn.Module):
+    def __init__(self,radius,nsamples,mlp,bn=True):
+        super(jointSAModule, self).__init__()
+        self.mlp = build_shared_mlp(mlp, bn=bn)
+        self.radius = radius
+        self.nsamples = nsamples
+
+    def forward(self,inputPointcloud,estiJoint):
+        idx = pointnet2_utils.ball_query(self.radius,self.nsamples,inputPointcloud[..., 0:3].contiguous(),estiJoint).type(torch.int64)
+        
+        newPointcloud = torch.gather(inputPointcloud.unsqueeze(1).expand(-1,21,-1,-1), 2, idx.unsqueeze(-1).expand(-1,-1,self.nsamples,6))
+        newFeature = newPointcloud.permute(0,3,1,2)
+        newFeature = self.mlp(newFeature)
+        newFeature =  F.max_pool2d(newFeature, kernel_size=[1, newFeature.size(3)])
+        return newPointcloud, newFeature

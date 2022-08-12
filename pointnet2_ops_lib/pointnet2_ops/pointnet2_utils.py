@@ -1,3 +1,4 @@
+from turtle import forward
 import torch
 import torch.nn as nn
 import warnings
@@ -377,3 +378,37 @@ class GroupAll(nn.Module):
             new_features = grouped_xyz
 
         return new_features
+
+''' New operation added here by Liyuan'''
+class QuaryandGroupJoints(nn.Module):
+    r'''
+    Group points from input pointcloud according to the joint location
+    
+    '''
+    def __init__(self):
+        super(QuaryandGroupJoints,self).__init__()
+
+    def forward(ctx,radius,nsample,xyz,new_xyz,features):
+        '''
+        input:
+            radius:
+            nsample:
+            xyz: (B,1024,3)
+            new_xyz:(B,21,3)
+        output:
+
+        
+        '''
+        idx = ball_query(radius,nsample,xyz,new_xyz)
+        xyz_trans = xyz.transpose(1,2).contiguous()
+        grouped_xyz = grouping_operation(xyz_trans, idx)  # (B, 3, npoint, nsample) here: (B, 3, 21, 32)
+        grouped_xyz -= new_xyz.transpose(1, 2).unsqueeze(-1)
+
+        ''' group feature'''
+        grouped_features = grouping_operation(features,idx) # (B, C, npoint, nsample)
+        new_features = torch.cat([grouped_xyz, grouped_features], dim=1) # (B, 6, 21, 32)
+        return new_features
+
+#groupJoint = QuaryandGroupJoints.apply
+
+        

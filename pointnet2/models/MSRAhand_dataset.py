@@ -86,9 +86,9 @@ class MSRAhand_n(Dataset):
     def __init__(self,task):
         super(MSRAhand_n,self).__init__()
         if task == 'train':
-            dir = '/home/liyuan/HandEstimation/model/P2Preg/data_ver2/train'
+            dir = '/home/liyuan/HandEstimation/model/P2Preg/data_ver3/train'
         if task == 'test':
-            dir = '/home/liyuan/HandEstimation/model/P2Preg/data_ver2/test'
+            dir = '/home/liyuan/HandEstimation/model/P2Preg/data_ver3/test'
         
         datadir = osp.join(dir,'data.pkl')
         labeldir = osp.join(dir,'label.pkl')

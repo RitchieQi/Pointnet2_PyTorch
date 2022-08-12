@@ -3,8 +3,8 @@ Author: Benny
 Date: Nov 2019
 """
 import sys
-sys.path.append('/home/liyuan/HandEstimation/model/P2Preg')
-from dataset.dataset import ContactPose
+sys.path.append('/home/liyuan/HandEstimation/model/P2Preg/')
+
 from dataset.MSRAhand_dataset import MSRAhand
 import argparse
 import numpy as np
@@ -12,14 +12,13 @@ import os
 import torch
 import logging
 from tqdm import tqdm
-from time import time
+
 import importlib
 from datapreprocess import data_process
 from datapreprocess import data_postprocess
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
-
 
 
 def parse_args():
@@ -70,17 +69,14 @@ def test(model, loader):
         l2_temp = []
         target = target.cpu().detach().numpy()
         target = target.reshape([32,21,3])
-        #nor_points = nor_points.transpose(2, 1)
-        begin = time()
-
-        pred= classifier(nor_points)
-        end = time()
-        print(begin-end)
-        pred_list = pred
+        
+        pred = classifier(nor_points)
+        pred = pred.unsqueeze(-1).view(32,21,3)
+        pred_list = pred.float()
         #oBBLs = oBBLs.numpy()
         #nor_centers = nor_centers.numpy()
         for i in range(32):
-            camCS = data_postprocess(pred_list[i],oBBLs[i],nor_centers[i],fst_rs[i],sec_rs[i],r_cens[i]).numpy().reshape(21,3)
+            camCS = data_postprocess(pred_list[i],oBBLs[i],nor_centers[i],fst_rs[i],sec_rs[i],r_cens[i])
             for j in range(21):
                 l2_norm = np.linalg.norm(camCS[j]-target[i][j])
                 l2_temp.append(np.mean(l2_norm))
@@ -139,7 +135,6 @@ def main(args):
 
     with torch.no_grad():
         avg_l2= test(classifier.eval(), testDataLoader)
-
         log_string('Test average l2: %f' % avg_l2)
 
 
