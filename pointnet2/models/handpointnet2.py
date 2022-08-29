@@ -10,6 +10,12 @@ import torch.optim.lr_scheduler as lr_sched
 from torch.utils.data import Dataset,random_split
 
 
+def getPretrainedHandglobal():
+    net = PointNet2ClassificationSSG()
+    net = net.cuda()
+    checkpoint = torch.load('checkpt/handGlobal.pth')
+    net.load_state_dict(checkpoint['model_state_dict'])
+    return net
 
 def get_model():
     return PointNet2ClassificationSSG()
@@ -77,11 +83,11 @@ class PointNet2ClassificationSSG(nn.Module):
                 be formated as (x, y, z, features...)
         """
         xyz, features = self._break_up_pc(pointcloud)
-
+        l_xyz = [xyz]
         for module in self.SA_modules:
             xyz, features = module(xyz, features)
-
-        return self.fc_layer(features.squeeze(-1))
+            l_xyz.append(xyz)
+        return self.fc_layer(features.squeeze(-1)), l_xyz
 
   
 

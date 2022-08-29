@@ -70,7 +70,7 @@ def test(model, loader):
         target = target.cpu().detach().numpy()
         target = target.reshape([32,21,3])
         
-        pred = classifier(nor_points)
+        pred,_ = classifier(nor_points)
         pred = pred.unsqueeze(-1).view(32,21,3)
         pred_list = pred.float()
         #oBBLs = oBBLs.numpy()
@@ -126,12 +126,12 @@ def main(args):
     model_name = 'handpointnet2'
     model = importlib.import_module(model_name)
 
-    classifier = model.get_model()
+    classifier = model.getPretrainedHandglobal()
     if not args.use_cpu:
         classifier = classifier.cuda()
 
-    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
-    classifier.load_state_dict(checkpoint['model_state_dict'])
+    # checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
+    # classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():
         avg_l2= test(classifier.eval(), testDataLoader)

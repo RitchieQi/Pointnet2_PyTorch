@@ -92,6 +92,7 @@ class MSRAhand_n(Dataset):
         
         datadir = osp.join(dir,'data.pkl')
         labeldir = osp.join(dir,'label.pkl')
+        print(labeldir)
         with open(datadir,'rb') as fd:
             self.data = pickle.load(fd)
         with open(labeldir,'rb') as fl:

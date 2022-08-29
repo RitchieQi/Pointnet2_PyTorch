@@ -136,7 +136,7 @@ def main(args):
     #shutil.copy('./utils.py', str(exp_dir))
     #shutil.copy('./train_classification.py', str(exp_dir))
 
-    classifier = model.get_model()#, normal_channel=args.use_normals)
+    classifier = model.getPretrainedHandglobal()#, normal_channel=args.use_normals)
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 
@@ -153,15 +153,15 @@ def main(args):
         classifier = classifier.cuda()
         criterion = criterion.cuda()
 
-    try:
-        checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
-        start_epoch = checkpoint['epoch']
-        classifier.load_state_dict(checkpoint['model_state_dict'])
-        log_string('Use pretrain model')
-    except:
-        log_string('No existing model, starting training from scratch...')
-        start_epoch = 0
-        #classifier = classifier.apply(weights_init)
+    # try:
+    #     checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
+    #     start_epoch = checkpoint['epoch']
+    #     classifier.load_state_dict(checkpoint['model_state_dict'])
+    #     log_string('Use pretrain model')
+    # except:
+    #     log_string('No existing model, starting training from scratch...')
+    #     start_epoch = 0
+    #     #classifier = classifier.apply(weights_init)
 
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(
