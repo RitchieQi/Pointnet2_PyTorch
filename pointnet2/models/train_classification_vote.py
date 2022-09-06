@@ -244,7 +244,7 @@ def main(args):
                 torch.save(state, savepath)
             global_epoch += 1
             
-            if (global_epoch%20 == 0):
+            if (global_epoch%50 == 0):
                 logger.info('Save model...')
                 savepath = str(checkpoints_dir) + '/best_model'+ str(global_epoch)+'.pth'
                 log_string('Saving at %s' % savepath)

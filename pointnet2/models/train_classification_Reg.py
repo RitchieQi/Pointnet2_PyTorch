@@ -20,6 +20,7 @@ import torch.nn as nn
 from MSRAhand_dataset import MSRAhand_n
 from HANDS17_dataset import Hands17data
 from loss import ofstL1Loss
+from ICVL_dataset import ICVL_n
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
@@ -128,11 +129,12 @@ def main(args):
     log_string(args)
 
     '''DATA LOADING'''
-
+    train_dataset = ICVL_n(task = 'train')
+    test_dataset = ICVL_n(task = 'test')
     # train_dataset = MSRAhand(n_sample =1024, task = 'train')
     # test_dataset = MSRAhand(n_sample = 1024, task = 'test')
-    train_dataset = MSRAhand_n(task = 'train')
-    test_dataset = MSRAhand_n(task = 'test')
+    # train_dataset = MSRAhand_n(task = 'train')
+    # test_dataset = MSRAhand_n(task = 'test')
     #data = Hands17data(task = 'train')
     # test_dataset = Hands17data(task = 'test')
     #test_dataset,train_dataset = torch.utils.data.random_split(data, [20000, 937032], generator=torch.Generator().manual_seed(42))

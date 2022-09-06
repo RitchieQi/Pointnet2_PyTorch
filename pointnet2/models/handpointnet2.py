@@ -13,8 +13,9 @@ from torch.utils.data import Dataset,random_split
 def getPretrainedHandglobal():
     net = PointNet2ClassificationSSG()
     net = net.cuda()
-    checkpoint = torch.load('checkpt/handGlobal.pth')
+    checkpoint = torch.load('checkpt/ICVLhandGlobal.pth')
     net.load_state_dict(checkpoint['model_state_dict'])
+    print('get pretrained hand global')
     return net
 
 def get_model():

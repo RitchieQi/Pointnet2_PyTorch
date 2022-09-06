@@ -12,6 +12,7 @@ import os
 import torch
 import logging
 from tqdm import tqdm
+from ICVL_dataset import ICVLHand
 
 import importlib
 from datapreprocess import data_process
@@ -118,7 +119,9 @@ def main(args):
 
 
     #test_dataset = ContactPose('test')
-    test_dataset = MSRAhand(n_sample = 1024, task = 'test')
+    #test_dataset = MSRAhand(n_sample=1024,task = 'test')
+    test_dataset = ICVLHand(task = 'test')
+
     testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8,drop_last=True)
     '''MODEL LOADING'''
     num_class = args.num_category
@@ -126,12 +129,13 @@ def main(args):
     model_name = 'handpointnet2'
     model = importlib.import_module(model_name)
 
-    classifier = model.getPretrainedHandglobal()
+    #classifier = model.getPretrainedHandglobal()
+    classifier = model.get_model()
     if not args.use_cpu:
         classifier = classifier.cuda()
 
-    # checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
-    # classifier.load_state_dict(checkpoint['model_state_dict'])
+    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/ICVLhandGlobal.pth')
+    classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():
         avg_l2= test(classifier.eval(), testDataLoader)

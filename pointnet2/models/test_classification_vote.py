@@ -12,7 +12,7 @@ import os
 import torch
 import logging
 from tqdm import tqdm
-
+from ICVL_dataset import ICVLHand
 import importlib
 from datapreprocess import data_process
 from datapreprocess import data_postprocess
@@ -40,6 +40,17 @@ def test(model, loader):
     
     classifier = model.eval()
     l2_list = []
+    l2_pm = []
+    l2_ThR = []
+    l2_ThT = []
+    l2_idR = []
+    l2_idT = []
+    l2_mdR = []
+    l2_mdT = []
+    l2_rnR = []
+    l2_rnT = []
+    l2_pkR = []
+    l2_pkT = []
     for j, (points, target) in tqdm(enumerate(loader), total=len(loader)):
 
 
@@ -70,7 +81,7 @@ def test(model, loader):
         target = target.cpu().detach().numpy()
         target = target.reshape([32,21,3])
         
-        refinePC,pred,_,_ = classifier(nor_points)
+        refinePC,pred,init,_ = classifier(nor_points)
         voteMap = refinePC[...,:3] - pred      
         vote = torch.mean(voteMap,dim=2)
         pred_list = vote.float()
@@ -78,13 +89,63 @@ def test(model, loader):
         #nor_centers = nor_centers.numpy()
         for i in range(32):
             camCS = data_postprocess(pred_list[i],oBBLs[i],nor_centers[i],fst_rs[i],sec_rs[i],r_cens[i])
+            camCS_init = data_postprocess(init[i],oBBLs[i],nor_centers[i],fst_rs[i],sec_rs[i],r_cens[i])
             for j in range(21):
-                l2_norm = np.linalg.norm(camCS[j]-target[i][j])
-                l2_temp.append(np.mean(l2_norm))
+                if refinePC[i][j].unique(dim=0).size()[0] < 25:
+                    if j == 0:
+                        l2_pm.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 1:
+                        l2_idR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 4:
+                        l2_idT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 5:
+                        l2_mdR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 8:
+                        l2_mdT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 9:
+                        l2_rnR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 12:
+                        l2_rnT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 13:
+                        l2_pkR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 16:
+                        l2_pkT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 17:
+                        l2_ThR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 20:
+                        l2_ThT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    l2_norm = np.linalg.norm(camCS_init[j] - target[i][j])
+                    l2_temp.append(np.mean(l2_norm))
+                else:
+                    if j == 0:
+                        l2_pm.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 1:
+                        l2_idR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 4:
+                        l2_idT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 5:
+                        l2_mdR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 8:
+                        l2_mdT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 9:
+                        l2_rnR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 12:
+                        l2_rnT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 13:
+                        l2_pkR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 16:
+                        l2_pkT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 17:
+                        l2_ThR.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    if j == 20:
+                        l2_ThT.append(np.linalg.norm(camCS[j]-target[i][j]))
+                    l2_norm = np.linalg.norm(camCS[j]-target[i][j])
+                    l2_temp.append(np.mean(l2_norm))
         l2_list.append(np.mean(l2_temp))
 
         
-    
+    print('wrist ',np.mean(l2_pm),' idr ',np.mean(l2_idR),' idt ',np.mean(l2_idT),' mdr ',np.mean(l2_mdR),' mdt ',np.mean(l2_mdT),' rnr ',np.mean(l2_rnR),' rnt ',np.mean(l2_rnT),' pkr ',np.mean(l2_pkR),' pkt ',np.mean(l2_pkT),' thr ',np.mean(l2_ThR),' tht ',np.mean(l2_ThT))
+
     l2_list = np.array(l2_list)
     avg_l2_norm = np.mean(l2_list)
 
@@ -119,7 +180,9 @@ def main(args):
 
 
     #test_dataset = ContactPose('test')
-    test_dataset = MSRAhand(n_sample = 1024, task = 'test')
+    #test_dataset = MSRAhand(n_sample = 1024, task = 'test')
+    test_dataset = ICVLHand(task = 'test')
+
     testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8,drop_last=True)
     '''MODEL LOADING'''
     num_class = args.num_category
@@ -131,7 +194,7 @@ def main(args):
     if not args.use_cpu:
         classifier = classifier.cuda()
 
-    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
+    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/ICVLMSG.pth')
     classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():

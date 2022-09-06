@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 from MSRAhand_dataset import MSRAhand_n
 from HANDS17_dataset import Hands17data
-
+from ICVL_dataset import ICVL_16Ver_n
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
@@ -31,9 +31,9 @@ def parse_args():
     parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size in training')
-    parser.add_argument('--model', default='handpointnet2', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_category', default=63, type=float,  help='training on ModelNet10/40')
-    parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
+    parser.add_argument('--model', default='handpointnet2_icvl', help='model name [default: pointnet_cls]')
+    parser.add_argument('--num_category', default=48, type=float,  help='training on ModelNet10/40')
+    parser.add_argument('--epoch', default=200, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=1024, help='Point Number')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
@@ -62,12 +62,12 @@ def test(model, loader):
         
         
         #points = points.transpose(2, 1)
-        pred= classifier(points)
+        pred,_= classifier(points)
         
         #pred = pred.permute(0,2,1)
-        target = target.view(64,63)
+        target = target.view(64,48)
         
-        print(pred.size())
+        #print(pred.size())
         total_loss = F.mse_loss(pred.squeeze().cpu().float(), target.cpu().float())
         
 
@@ -120,8 +120,8 @@ def main(args):
 
     # train_dataset = MSRAhand(n_sample =1024, task = 'train')
     # test_dataset = MSRAhand(n_sample = 1024, task = 'test')
-    train_dataset = MSRAhand_n(task = 'train')
-    test_dataset = MSRAhand_n(task = 'test')
+    train_dataset = ICVL_16Ver_n(task = 'train')
+    test_dataset = ICVL_16Ver_n(task = 'test')
     #data = Hands17data(task = 'train')
     # test_dataset = Hands17data(task = 'test')
     #test_dataset,train_dataset = torch.utils.data.random_split(data, [20000, 937032], generator=torch.Generator().manual_seed(42))
@@ -136,7 +136,7 @@ def main(args):
     #shutil.copy('./utils.py', str(exp_dir))
     #shutil.copy('./train_classification.py', str(exp_dir))
 
-    classifier = model.getPretrainedHandglobal()#, normal_channel=args.use_normals)
+    classifier = model.get_model()#, normal_channel=args.use_normals)
     criterion = model.get_loss()
     classifier.apply(inplace_relu)
 
@@ -153,15 +153,15 @@ def main(args):
         classifier = classifier.cuda()
         criterion = criterion.cuda()
 
-    # try:
-    #     checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
-    #     start_epoch = checkpoint['epoch']
-    #     classifier.load_state_dict(checkpoint['model_state_dict'])
-    #     log_string('Use pretrain model')
-    # except:
-    #     log_string('No existing model, starting training from scratch...')
-    #     start_epoch = 0
-    #     #classifier = classifier.apply(weights_init)
+    try:
+        checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model.pth')
+        start_epoch = checkpoint['epoch']
+        classifier.load_state_dict(checkpoint['model_state_dict'])
+        log_string('Use pretrain model')
+    except:
+        log_string('No existing model, starting training from scratch...')
+        start_epoch = 0
+        #classifier = classifier.apply(weights_init)
 
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(
@@ -197,7 +197,7 @@ def main(args):
             if not args.use_cpu:
                 points, target = points.cuda(), target.cuda()
 
-            pred = classifier(points)
+            pred,_ = classifier(points)
             #print(pred.shape)
             loss = criterion(pred.squeeze(), target.float())
             
