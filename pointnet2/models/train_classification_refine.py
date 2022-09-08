@@ -19,7 +19,7 @@ from tqdm import tqdm
 import torch.nn as nn
 from MSRAhand_dataset import MSRAhand_n
 from HANDS17_dataset import Hands17data
-from ICVL_dataset import ICVL_n
+from ICVL_dataset import ICVL_16Ver_n
 from loss import ofstL1Loss
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,9 +32,9 @@ def parse_args():
     parser.add_argument('--use_cpu', action='store_true', default=False, help='use cpu mode')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size in training')
-    parser.add_argument('--model', default='handpointnet2_vote_refine_msg', help='model name [default: pointnet_cls]')
+    parser.add_argument('--model', default='handpointnet2_vote_refine_msg_icvl', help='model name [default: pointnet_cls]')
     parser.add_argument('--num_category', default=63, type=float,  help='training on ModelNet10/40')
-    parser.add_argument('--epoch', default=500, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=20, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
     parser.add_argument('--num_point', type=int, default=1024, help='Point Number')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
@@ -76,7 +76,7 @@ def test(model, loader):
 
         
         
-        target = target.view(args.batch_size,21,3)
+        target = target.view(args.batch_size,16,3)
         
         #print(pred.size())
         total_loss = F.mse_loss(vote, target)
@@ -129,8 +129,8 @@ def main(args):
     log_string(args)
 
     '''DATA LOADING'''
-    train_dataset = ICVL_n(task = 'train')
-    test_dataset = ICVL_n(task = 'test')
+    train_dataset = ICVL_16Ver_n(task = 'train')
+    test_dataset = ICVL_16Ver_n(task = 'test')
     # train_dataset = MSRAhand(n_sample =1024, task = 'train')
     # test_dataset = MSRAhand(n_sample = 1024, task = 'test')
     # train_dataset = MSRAhand_n(task = 'train')

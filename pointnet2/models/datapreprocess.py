@@ -82,7 +82,7 @@ def create_pc(pointsets,f_label):
     pointcloud.points = o3du.Vector3dVector(pointsets.numpy().reshape([1024,3]))
 
     joints = o3dg.PointCloud()
-    joints.points = o3du.Vector3dVector(f_label.numpy().reshape([21,3]))
+    joints.points = o3du.Vector3dVector(f_label.numpy().reshape([-1,3]))
     return pointcloud,joints
 
 

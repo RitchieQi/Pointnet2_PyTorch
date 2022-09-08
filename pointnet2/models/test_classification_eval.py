@@ -92,23 +92,23 @@ def test(model, loader):
             for j in range(21):
                 if j == 0:
                     l2_pm.append(np.linalg.norm(camCS[j]-target[i][j]))
-                if j == 1:
+                if j in [1,2,3]:
                     l2_idR.append(np.linalg.norm(camCS[j]-target[i][j]))
                 if j == 4:
                     l2_idT.append(np.linalg.norm(camCS[j]-target[i][j]))
-                if j == 5:
+                if j in [5,6,7]:
                     l2_mdR.append(np.linalg.norm(camCS[j]-target[i][j]))
                 if j == 8:
                     l2_mdT.append(np.linalg.norm(camCS[j]-target[i][j]))
-                if j == 9:
+                if j in [9,10,11]:
                     l2_rnR.append(np.linalg.norm(camCS[j]-target[i][j]))
                 if j == 12:
                     l2_rnT.append(np.linalg.norm(camCS[j]-target[i][j]))
-                if j == 13:
+                if j in [13,14,15]:
                     l2_pkR.append(np.linalg.norm(camCS[j]-target[i][j]))
                 if j == 16:
                     l2_pkT.append(np.linalg.norm(camCS[j]-target[i][j]))
-                if j == 17:
+                if j in [17,18,19]:
                     l2_ThR.append(np.linalg.norm(camCS[j]-target[i][j]))
                 if j == 20:
                     l2_ThT.append(np.linalg.norm(camCS[j]-target[i][j]))
@@ -153,8 +153,8 @@ def main(args):
 
 
     #test_dataset = ContactPose('test')
-    #test_dataset = MSRAhand(n_sample=1024,task = 'test')
-    test_dataset = ICVLHand(task = 'test')
+    test_dataset = MSRAhand(n_sample=1024,task = 'test')
+    #test_dataset = ICVLHand(task = 'test')
 
     testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8,drop_last=True)
     '''MODEL LOADING'''
@@ -168,7 +168,7 @@ def main(args):
     if not args.use_cpu:
         classifier = classifier.cuda()
 
-    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/ICVLhandGlobal.pth')
+    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/handGlobal.pth')
     classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():

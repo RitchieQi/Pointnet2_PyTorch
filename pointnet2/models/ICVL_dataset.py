@@ -37,9 +37,9 @@ class ICVLHand(Dataset):
         current_labels = torch.flatten(torch.from_numpy(pcd_label.copy()).float())
         return current_points,current_labels
 
-class ICVLHand(Dataset):
+class ICVLHand_16Ver(Dataset):
     def __init__(self,task):
-        super(ICVLHand, self).__init__()
+        super(ICVLHand_16Ver, self).__init__()
         datadir = '/home/liyuan/HandEstimation/dataset/ICVL_16Ver_1024'
         if task == 'train':
             self.pcddir = osp.join(datadir,'train')
@@ -56,11 +56,9 @@ class ICVLHand(Dataset):
 
     def __getitem__(self,index):
         
-        if index == 7065: #wrongly labled frame
-            index = 7066
 
-        pcd_name = '%i.pcd'%(index+1)
-        pcd_label = self.label_[str(index+1)]
+        pcd_name = '%i.pcd'%(index)
+        pcd_label = self.label_[index]
         pcd = o3dio.read_point_cloud(osp.join(self.pcddir,pcd_name))
         points = np.asarray(pcd.points)
         current_points = torch.from_numpy(points.copy()).float()
@@ -110,9 +108,9 @@ class ICVL_16Ver_n(Dataset):
         return self.data[index],self.label[index]
 if __name__ == '__main__':
     from torch.utils.data import DataLoader
-    data = ICVL_16Ver_n('train')
+    data = ICVLHand_16Ver('train')
     dloader = DataLoader(data, batch_size = 128, shuffle=True)
     inputs, labels = next(iter(dloader))
-    torch.save(inputs,'inputs.pt')
-    torch.save(labels,'labels.pt')
-    print(inputs[0].size(),labels[0].size())
+    # torch.save(inputs,'inputs.pt')
+    # torch.save(labels,'labels.pt')
+    print(inputs[0],labels[0])
